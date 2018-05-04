@@ -1,5 +1,7 @@
 # AI Game Competition
 
+Waffle issue board: https://waffle.io/scala-academy/ai-game-competition
+
 Learning project for training Scala, Akka and Finch skills
 
 Basic idea is to together develop a game server that hosts games.
