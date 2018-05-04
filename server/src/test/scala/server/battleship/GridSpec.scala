@@ -1,5 +1,9 @@
-package server.battleship.GridSpec
+package server.battleship
 
-class GridSpec {
+import org.scalatest.{Matchers, WordSpec}
+
+class GridSpec extends WordSpec with Matchers {
+
+  ""
 
 }
