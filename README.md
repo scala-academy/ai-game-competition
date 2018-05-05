@@ -1,5 +1,7 @@
 # AI Game Competition
 
+[![Join the chat at https://gitter.im/ai-game-competition/Lobby](https://badges.gitter.im/ai-game-competition/Lobby.svg)](https://gitter.im/ai-game-competition/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Waffle issue board: https://waffle.io/scala-academy/ai-game-competition
 
 Learning project for training Scala, Akka and Finch skills
