@@ -7,20 +7,35 @@ case object YouBeatMe extends Message
 case class YouSankMy(ship: Ship) extends Message
 
 object Grid {
-  case class ShipPlacement(row: Int, col: Char, isHorizontal: Boolean)
+
+  object ShipPlacement {
+    type Direction = Boolean
+
+    object Direction {
+      val HORIZONTAL = true
+      val VERTICAL = false
+    }
+
+  }
+
+  case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)]) {
+
+    def isSunk = ???
+  }
+
 }
 
-case class Grid(shipPlacements: Grid.ShipPlacement) {
+case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
+  require(shipPlacements.size == 5, "Shipment number is incorect: " + shipPlacements.size + " instead of 5")
+  require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types in ship placements")
+  require(shipPlacements.filter(s => s.col))
+
 
   def attack(row: Int, col: Char): (Grid, Option[Message]) = {
     ???
   }
 
-  /**
-    * @param placement Topleft (row, col, isHorizontal) of the location the ship is to be placed
-    * @param ship The ship to be placed
-    * @return A grid if the placement is valid (not overlapping with other ships, not out of boundaries)
-    */
-  def placeShip(placement: Grid.ShipPlacement, ship: Ship): Option[Grid] = ???
+
+
 
 }

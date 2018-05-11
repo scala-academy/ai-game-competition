@@ -8,6 +8,7 @@ object Ship {
   val destroyer = Ship(2, "Destroyer")
 
   val allShips = Set(carrier, battleShip, cruiser, submarine, destroyer)
+  val allShipTypes = allShips.map(_.name)
 }
 
 case class Ship private(size: Int, name: String)
