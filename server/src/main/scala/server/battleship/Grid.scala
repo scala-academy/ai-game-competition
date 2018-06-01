@@ -1,5 +1,7 @@
 package server.battleship
 
+import server.battleship.Grid.AttackResult
+
 sealed trait Message
 
 case object YouBeatMe extends Message
@@ -7,6 +9,14 @@ case object YouBeatMe extends Message
 case class YouSankMy(ship: Ship) extends Message
 
 object Grid {
+
+  type AttackResult = String
+
+  object AttackResult {
+    val HIT = "Hit"
+    val MISS = "Miss"
+    val WIN = "Win"
+  }
 
   object ShipPlacement {
     type Direction = Boolean
@@ -37,11 +47,15 @@ object Grid {
     }, "Row out of boundaries")
 
 
-    def getPositionPoints(): Set[(Int, Char)] = {
+    lazy val getPositionPoints: Set[(Int, Char)] = {
       (0 until ship.size).map(index => {
         if (isHorizontal) (row, (col + index).toChar)
         else (row + index, col)
       }).toSet
+    }
+
+    def isHit(hitPoint: (Int, Char)): Boolean = {
+      getPositionPoints.contains(hitPoint)
     }
 
 
@@ -59,12 +73,19 @@ case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
 
 
 
-  def attack(row: Int, col: Char): (Grid, Option[Message]) = {
-    ???
+  def attack(row: Int, col: Char): (Grid, AttackResult) = {
+    import AttackResult._
+    val shipPlacement = shipPlacements.find(sp => sp.isHit((row, col)))
+    if(shipPlacement.isEmpty) (this, MISS)
+    else {
+      val shipP = shipPlacement.get
+      val newShipP = shipP.copy(hits= shipP.hits + Tuple2(row, col))
+      (Grid(shipPlacements - shipP + newShipP), HIT)
+    }
   }
 
   def nonOverlapping(): Boolean = {
-    val points = shipPlacements.map(_.getPositionPoints()).toList.flatten
+    val points = shipPlacements.map(_.getPositionPoints).toList.flatten
     points.distinct.lengthCompare(points.size) == 0
   }
 
