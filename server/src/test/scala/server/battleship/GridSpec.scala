@@ -27,10 +27,6 @@ class GridSpec extends WordSpec with Matchers {
   val correctShipPlacements = Set(carrier, battleShip, cruiser, submarine, destroyer)
 
 
-
-
-
-
   "Grid" should {
     "return a new grid, if the 5 ships positions are correct" in {
       val _ = Grid(correctShipPlacements)
@@ -38,27 +34,48 @@ class GridSpec extends WordSpec with Matchers {
 
     "should return error if ship number is wrong" in {
       val exceptionInsufficientNumber = intercept[IllegalArgumentException] {
-//        val wrongPlacement = correctShipPlacements.filter(sp => sp.ship != carrier)
+        //        val wrongPlacement = correctShipPlacements.filter(sp => sp.ship != carrier)
         val wrongPlacement = correctShipPlacements - carrier
         val _ = Grid(wrongPlacement)
       }
       assert(exceptionInsufficientNumber.getMessage === "requirement failed: Ship number is incorrect")
 
       val exceptionExceedingNumber = intercept[IllegalArgumentException] {
-        val wrongPlacement = correctShipPlacements + destroyer.copy(row=6,col='G')
+        val wrongPlacement = correctShipPlacements + destroyer.copy(row = 6, col = 'G')
         val _ = Grid(wrongPlacement)
       }
       assert(exceptionExceedingNumber.getMessage === "requirement failed: Ship number is incorrect")
     }
 
 
+    /*  A B C D E F G H I J
+      1 * * * * * * * * * *
+      2 * * * * * * * # # #
+      3 * * * * * * * * * *
+      4 * * * # * * * * * *
+      5 # # # X # * * * * *
+      6 * * * # * * * * * *
+      7 * * * # * * * * * *
+      8 * * * * * * * * * *
+      9 # * * * * * * * * *
+     10 # * * * * * * # # #
+  */
     "Fails to create Grid if one ship is on top of the other" in {
+      val exception = intercept[IllegalArgumentException] {
+        val wrongPlacement = correctShipPlacements - carrier + carrier.copy(row = 5)
+        val _ = Grid(wrongPlacement)
+      }
+      assert(exception.getMessage === "requirement failed: Ships overlap")
 
     }
 
 
-    "Fails to create Grid if group of ships is not correct" in {
-
+    "Fails to create Grid if group of ships is missing ship types" in {
+      val exception = intercept[IllegalArgumentException] {
+        val wrongPlacement = correctShipPlacements - cruiser + destroyer.copy(row = 6, col = 'G')
+        val _ = Grid(wrongPlacement)
+      }
+      assert(exception.getMessage === "requirement failed: Not all types of ship are present")
     }
   }
 
@@ -73,7 +90,6 @@ class GridSpec extends WordSpec with Matchers {
 
     }
   }
-
 
 
   "ShipPlacement" should {
@@ -167,6 +183,16 @@ class GridSpec extends WordSpec with Matchers {
       }
       assert(thrown.getMessage === "requirement failed: Row out of boundaries")
 
+    }
+
+    "findPositionPoints should return the correct points" in {
+      val carrierPoints = carrier.getPositionPoints()
+      val carrierExpected = Set((1,'A'), (1,'B'), (1,'C'),(1,'D'), (1,'E'))
+      carrierExpected shouldEqual carrierPoints
+
+      val destroyerPoints = destroyer.getPositionPoints()
+      val destroyerExpected = Set((9,'A'), (10,'A'))
+      destroyerExpected shouldEqual destroyerPoints
     }
 
   }

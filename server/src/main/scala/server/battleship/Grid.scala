@@ -37,18 +37,35 @@ object Grid {
     }, "Row out of boundaries")
 
 
-    def isSunk = ???
+    def getPositionPoints(): Set[(Int, Char)] = {
+      (0 until ship.size).map(index => {
+        if (isHorizontal) (row, (col + index).toChar)
+        else (row + index, col)
+      }).toSet
+    }
+
+
+    def isSunk = hits.size == ship.size
   }
 
 }
 
 case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
   require(shipPlacements.size == 5, "Ship number is incorrect")
-  require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types in ship placements")
+  require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types of ship are present")
+  require(nonOverlapping(), "Ships overlap")
+
+
+
 
 
   def attack(row: Int, col: Char): (Grid, Option[Message]) = {
     ???
+  }
+
+  def nonOverlapping(): Boolean = {
+    val points = shipPlacements.map(_.getPositionPoints()).toList.flatten
+    points.distinct.lengthCompare(points.size) == 0
   }
 
 }
