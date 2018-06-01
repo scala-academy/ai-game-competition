@@ -2,7 +2,6 @@ package server.battleship
 
 import org.scalatest.{Matchers, WordSpec}
 import Grid.ShipPlacement.Direction._
-import server.battleship.Grid.ShipPlacement
 
 class GridSpec extends WordSpec with Matchers {
 
@@ -32,16 +31,33 @@ class GridSpec extends WordSpec with Matchers {
 
 
 
-  "create" should {
-    "return a grid with 5 ships positioned" in {
-
+  "Grid" should {
+    "return a new grid, if the 5 ships positions are correct" in {
+      val _ = Grid(correctShipPlacements)
     }
 
     "should return error if ship number is wrong" in {
+      val exceptionInsufficientNumber = intercept[IllegalArgumentException] {
+//        val wrongPlacement = correctShipPlacements.filter(sp => sp.ship != carrier)
+        val wrongPlacement = correctShipPlacements - carrier
+        val _ = Grid(wrongPlacement)
+      }
+      assert(exceptionInsufficientNumber.getMessage === "requirement failed: Ship number is incorrect")
+
+      val exceptionExceedingNumber = intercept[IllegalArgumentException] {
+        val wrongPlacement = correctShipPlacements + destroyer.copy(row=6,col='G')
+        val _ = Grid(wrongPlacement)
+      }
+      assert(exceptionExceedingNumber.getMessage === "requirement failed: Ship number is incorrect")
+    }
+
+
+    "Fails to create Grid if one ship is on top of the other" in {
 
     }
 
-    "should return error if ship combination is wrong" in {
+
+    "Fails to create Grid if group of ships is not correct" in {
 
     }
   }
@@ -59,47 +75,6 @@ class GridSpec extends WordSpec with Matchers {
   }
 
 
-
-  "placeShip" should {
-    "return true, if all ships are placed correctly" in {
-
-      Grid(correctShipPlacements) shouldBe a [Grid]
-
-    }
-
-
-    /*    A B C D E F G H I J
-        1 # # # # * * * * * *
-        2 * * * * * * * * * *
-        3 * * * * * * * * * *
-        4 * * * * * * * * * *
-        5 * * * * * * * * * *
-        6 * * * * * * * * * *
-        7 * * * * * * * * * *
-        8 * * * * * * * * * *
-        9 * * * * * * * * * *
-       10 * * * * * * * * * *
-    */
-    "Fails to create Grid if one ship is on top of the other" in {
-
-    }
-
-    /*    A B C D E F G H I J
-        1 # # # # * * * * * *
-        2 * * * * * * * * * *
-        3 * * * * * * * * * *
-        4 * * * * * * * * * *
-        5 * * * * * * * * * *
-        6 * * * * * * * * * *
-        7 * * * * * * * * * *
-        8 * * * * * * * * * *
-        9 * * * * * * * * * *
-       10 * * * * * * * * * *
-    */
-    "Fails to create Grid if group of ships is not correct" in {
-
-    }
-  }
 
   "ShipPlacement" should {
     /*    A B C D E F G H I J

@@ -1,7 +1,5 @@
 package server.battleship
 
-import server.battleship.Grid.ShipPlacement
-
 sealed trait Message
 
 case object YouBeatMe extends Message
@@ -45,7 +43,7 @@ object Grid {
 }
 
 case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
-  require(shipPlacements.size == 5, "Shipment number is incorect: " + shipPlacements.size + " instead of 5")
+  require(shipPlacements.size == 5, "Ship number is incorrect")
   require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types in ship placements")
 
 
