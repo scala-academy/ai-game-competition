@@ -103,7 +103,7 @@ class GridSpec extends WordSpec with Matchers {
 
   "ShipPlacement" should {
     /*    A B C D E F G H I J
-        1 # # # # * * * * * *
+        1 * * * * * * * * * *
         2 * * * * * * * * * *
         3 * * * * * * * * * *
         4 * * * * * * * * * *
@@ -112,10 +112,27 @@ class GridSpec extends WordSpec with Matchers {
         7 * * * * * * * * * *
         8 * * * * * * * * * *
         9 * * * * * * * * * *
-       10 * * * * * * * * * *
+       10 * * * * * # # # # #
     */
     "creates object, if the shipPlacement is inside the Grid" in {
-      val _ = Grid.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL, Set())
+      val _ = Grid.ShipPlacement(Ship.carrier, 10, 'F', HORIZONTAL)
+    }
+
+
+    /*    A B C D E F G H I J
+        1 * * * * * * * * * #
+        2 * * * * * * * * * #
+        3 * * * * * * * * * #
+        4 * * * * * * * * * #
+        5 * * * * * * * * * #
+        6 * * * * * * * * * *
+        7 * * * * * * * * * *
+        8 * * * * * * * * * *
+        9 * * * * * * * * * *
+       10 * * * * * * * * * *
+    */
+    "create object, if the vertical shipPlacement is inside the Grid" in {
+      val _ = Grid.ShipPlacement(Ship.carrier, 1, 'J', VERTICAL)
     }
 
     "fail to create ShipPlacement, if the shipPlacement column is outside the Grid" in {
@@ -128,7 +145,7 @@ class GridSpec extends WordSpec with Matchers {
 
     "fail to create ShipPlacement, if the shipPlacement column is a special character" in {
       val thrown = intercept[IllegalArgumentException] {
-        val wrongPlacement = carrier.copy(col = 13.toChar)
+        val wrongPlacement = carrier.copy(col = '$')
       }
       assert(thrown.getMessage === "requirement failed: Column out of boundaries")
 
@@ -163,7 +180,7 @@ class GridSpec extends WordSpec with Matchers {
         4 * * * * * * * * * *
         5 * * * * * * * * * *
         6 * * * * * * * * * *
-        7 * * * * * * * * * *
+        7 # * * * * * * * * *
         8 # * * * * * * * * *
         9 # * * * * * * * * *
        10 # * * * * * * * * *
@@ -171,7 +188,7 @@ class GridSpec extends WordSpec with Matchers {
     */
     "fail to create ShipPlacement, if the shipPlacement vertical with ship out of boundaries TEST" in {
       val thrown = intercept[IllegalArgumentException] {
-        val wrongPlacement = carrier.copy(row = 8, isHorizontal = false)
+        val wrongPlacement = carrier.copy(row = 7, isHorizontal = false)
       }
       assert(thrown.getMessage === "requirement failed: Row out of boundaries")
 

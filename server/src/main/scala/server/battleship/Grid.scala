@@ -22,7 +22,7 @@ object Grid {
 
   val size = 10
 
-  case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)]) {
+  case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)] = Set()) {
     require({
       val leftCorrect = col >= 'A'
       val rightCorrect =
