@@ -1,6 +1,6 @@
 package server.battleship
 
-import server.battleship.Grid.AttackResult
+import server.battleship.Grid._
 
 sealed trait Message
 
@@ -10,13 +10,30 @@ case class YouSankMy(ship: Ship) extends Message
 
 object Grid {
 
-  type AttackResult = String
-
-  object AttackResult {
-    val HIT = "Hit"
-    val MISS = "Miss"
-    val WIN = "Win"
+  sealed trait AttackResult {
+    def getMessage: String
   }
+
+  case object Hit extends  AttackResult {
+
+    val getMessage = "You hit my ship!"
+  }
+
+  case class Sunk(ship: Ship) extends AttackResult {
+
+    def getMessage = s"You sunk my ${ship.name}!"
+  }
+
+  case object Miss extends AttackResult {
+
+    val getMessage = "You miss"
+  }
+
+  case object Win extends AttackResult {
+    val getMessage = "You win!"
+  }
+
+  val size = 10
 
   object ShipPlacement {
     type Direction = Boolean
@@ -27,8 +44,6 @@ object Grid {
     }
 
   }
-
-  val size = 10
 
   case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)] = Set()) {
     require({
@@ -45,6 +60,7 @@ object Grid {
         else row + ship.size <= 1 + size
       upCorrect && downCorrect
     }, "Row out of boundaries")
+    require(hits.forall(isHit), "Invalid hit point(s)")
 
 
     lazy val getPositionPoints: Set[(Int, Char)] = {
@@ -58,6 +74,11 @@ object Grid {
       getPositionPoints.contains(hitPoint)
     }
 
+    def hit(hitPoint: (Int, Char)): ShipPlacement = {
+
+      this.copy(hits = this.hits + hitPoint)
+    }
+
 
     def isSunk = hits.size == ship.size
   }
@@ -69,24 +90,29 @@ case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
   require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types of ship are present")
   require(nonOverlapping(), "Ships overlap")
 
-
-
-
-
   def attack(row: Int, col: Char): (Grid, AttackResult) = {
-    import AttackResult._
-    val shipPlacement = shipPlacements.find(sp => sp.isHit((row, col)))
-    if(shipPlacement.isEmpty) (this, MISS)
-    else {
-      val shipP = shipPlacement.get
-      val newShipP = shipP.copy(hits= shipP.hits + Tuple2(row, col))
-      (Grid(shipPlacements - shipP + newShipP), HIT)
+    shipPlacements.find(sp => sp.isHit((row, col))) match {
+      case None =>
+        (this, Miss)
+
+      case Some(shipP) =>
+        val newHit = (row, col)
+        val newShipP = shipP.copy(hits= shipP.hits + newHit)
+        val newGrid = Grid(shipPlacements - shipP + newShipP)
+        val attackResult =
+          if (newGrid.isGameOver) Win
+          else if (newShipP.isSunk) Sunk(newShipP.ship)
+          else Hit
+        (newGrid, attackResult)
     }
   }
 
   def nonOverlapping(): Boolean = {
+    //TODO: Return the overlapping points
     val points = shipPlacements.map(_.getPositionPoints).toList.flatten
     points.distinct.lengthCompare(points.size) == 0
   }
+
+  def isGameOver = shipPlacements.forall(_.isSunk)
 
 }

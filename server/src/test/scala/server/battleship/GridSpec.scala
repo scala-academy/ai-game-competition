@@ -2,7 +2,7 @@ package server.battleship
 
 import org.scalatest.{Matchers, WordSpec}
 import Grid.ShipPlacement.Direction._
-import Grid.AttackResult._
+import server.battleship.Grid.{Hit, Miss, ShipPlacement}
 
 class GridSpec extends WordSpec with Matchers {
 
@@ -19,11 +19,11 @@ class GridSpec extends WordSpec with Matchers {
      10 # * * * * * * # # #
   */
 
-  val carrierP = Grid.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL, Set())
-  val battleShipP = Grid.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL, Set())
-  val cruiserP = Grid.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL, Set())
-  val submarineP = Grid.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL, Set())
-  val destroyerP = Grid.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL, Set())
+  val carrierP = Grid.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
+  val battleShipP = Grid.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
+  val cruiserP = Grid.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL)
+  val submarineP = Grid.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL)
+  val destroyerP = Grid.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
 
   val correctShipPlacements = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
 
@@ -35,7 +35,6 @@ class GridSpec extends WordSpec with Matchers {
 
     "should return error if ship number is wrong" in {
       val exceptionInsufficientNumber = intercept[IllegalArgumentException] {
-        //        val wrongPlacement = correctShipPlacements.filter(sp => sp.ship != carrier)
         val wrongPlacement = correctShipPlacements - carrierP
         val _ = Grid(wrongPlacement)
       }
@@ -108,26 +107,84 @@ class GridSpec extends WordSpec with Matchers {
     "return a new grid and Hit if attack is successful" in {
       val hitPoint = (1, 'C')
       val grid = Grid(correctShipPlacements)
-      val (newGrid, hitOrMiss) = grid.attack(hitPoint._1, hitPoint._2)
-      hitOrMiss shouldBe HIT
+      val (newGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
+      attackResult shouldBe Hit
       newGrid.shipPlacements.find(sp => sp.ship == Ship.carrier).get.hits should contain(hitPoint)
     }
 
     "return the same grid and Miss if attack is unsuccessful" in {
       val hitPoint = (2, 'A')
       val grid = Grid(correctShipPlacements)
-      val (sameGrid, hitOrMiss) = grid.attack(hitPoint._1, hitPoint._2)
-      hitOrMiss shouldBe MISS
+      val (sameGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
+      attackResult shouldBe Miss
       sameGrid shouldEqual grid
     }
 
-    "return a new grid and 'You sank my Battleship' when a battleship is completely hit" in {
-      //TODO
-
+    /*   A B C D E F G H I J
+       1 # # # # # * * * * *
+       2 * * * * * * * # # #
+       3 * * * * * * * * * *
+       4 * * * # * * * * * *
+       5 * * * # * * * * * *
+       6 * * * # * * * * * *
+       7 * * * # * * * * * *
+       8 * * * * * * * * * *
+       9 # * * * * * * * * *
+      10 ! * * * * * * ! ! !
+   */
+    "return a new grid and 'You sank my Destroyer' when a destroyer is completely hit" in {
+      val hitPoint = (9, 'A')
+      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.hit((10,'A'))
+      val grid = Grid(newShipPlacement)
+      val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
+      nextGrid should not be grid
+      attackResult.getMessage shouldBe "You sunk my Destroyer!"
     }
 
-    "return a new grid and 'You beat me' when the last ship is completely hit" in {
+    "return same grid with hit when you hit same spot in a ship" in {
+      val hitPoint = (10, 'A')
+      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits=Set((10,'A')))
+      val grid = Grid(newShipPlacement)
+      val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
+      nextGrid shouldBe grid
+      attackResult.getMessage shouldBe "You hit my ship!"
+    }
 
+    "return same grid with sunk when you hit an already sunk ship" in {
+      //TODO: Sent funny message if she sends same spot again
+      val hitPoint = (9, 'A')
+      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits=Set((10,'A'), (9, 'A')))
+      val grid = Grid(newShipPlacement)
+      val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
+      nextGrid shouldBe grid
+      attackResult.getMessage shouldBe "You sunk my Destroyer!"
+    }
+
+    /*   A B C D E F G H I J
+       1 # # # # # * * * * *
+       2 * * * * * * * # # #
+       3 * * * * * * * * * *
+       4 * * * # * * * * * *
+       5 * * * # * * * * * *
+       6 * * * # * * * * * *
+       7 * * * # * * * * * *
+       8 * * * * * * * * * *
+       9 # * * * * * * * * *
+      10 ! * * * * * * ! ! !
+   */
+    "return a new grid and 'You beat me' when the last ship is completely hit" in {
+      val hitPoint = (9, 'A')
+      val newShipPlacement = Set(
+        destroyerP.copy(hits=Set((10,'A'))),
+        carrierP.copy(hits=carrierP.getPositionPoints),
+        battleShipP.copy(hits = battleShipP.getPositionPoints),
+        cruiserP.copy(hits = cruiserP.getPositionPoints),
+        submarineP.copy(hits = submarineP.getPositionPoints)
+      )
+      val grid = Grid(newShipPlacement)
+      val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
+      nextGrid should not be grid
+      attackResult.getMessage shouldBe "You win!"
     }
   }
 
@@ -233,6 +290,20 @@ class GridSpec extends WordSpec with Matchers {
       val destroyerPoints = destroyerP.getPositionPoints
       val destroyerExpected = Set((9, 'A'), (10, 'A'))
       destroyerExpected shouldEqual destroyerPoints
+    }
+
+    "hit a shipPlacement should succeed if hitpoint is correct" in {
+      val hitPoint = (9,'A')
+      val newShipPlacement = destroyerP.hit(hitPoint)
+      newShipPlacement should not be destroyerP
+    }
+
+    "hit a shipPlacement returns exception if hitpoint is not part of the ship" in {
+      val wrongHitPoint = (2,'A')
+      val thrown = intercept[IllegalArgumentException] {
+        val _ = destroyerP.hit(wrongHitPoint)
+      }
+      assert(thrown.getMessage === "requirement failed: Invalid hit point(s)")
     }
 
   }
