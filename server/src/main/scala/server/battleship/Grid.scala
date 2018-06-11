@@ -14,7 +14,7 @@ object Grid {
     def getMessage: String
   }
 
-  case object Hit extends  AttackResult {
+  case object Hit extends AttackResult {
 
     val getMessage = "You hit my ship!"
   }
@@ -88,7 +88,15 @@ object Grid {
 case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
   require(shipPlacements.size == 5, "Ship number is incorrect")
   require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types of ship are present")
-  require(nonOverlapping(), "Ships overlap")
+  require(overlaps.isEmpty, "Ships overlap at point(s) " + overlaps.toString)
+
+  lazy val overlaps: Set[(Int, Char)] = {
+    val points = shipPlacements.map(_.getPositionPoints).toList.flatten
+    points
+    .groupBy(identity)
+    .collect { case (x, _ :: _ :: _) => x }
+    .toSet
+  }
 
   def attack(row: Int, col: Char): (Grid, AttackResult) = {
     shipPlacements.find(sp => sp.isHit((row, col))) match {
@@ -97,7 +105,7 @@ case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
 
       case Some(shipP) =>
         val newHit = (row, col)
-        val newShipP = shipP.copy(hits= shipP.hits + newHit)
+        val newShipP = shipP.copy(hits = shipP.hits + newHit)
         val newGrid = Grid(shipPlacements - shipP + newShipP)
         val attackResult =
           if (newGrid.isGameOver) Win
@@ -105,12 +113,6 @@ case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
           else Hit
         (newGrid, attackResult)
     }
-  }
-
-  def nonOverlapping(): Boolean = {
-    //TODO: Return the overlapping points
-    val points = shipPlacements.map(_.getPositionPoints).toList.flatten
-    points.distinct.lengthCompare(points.size) == 0
   }
 
   def isGameOver = shipPlacements.forall(_.isSunk)
