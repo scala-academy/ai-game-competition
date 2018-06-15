@@ -2,6 +2,7 @@ package server.battleship
 
 import org.scalatest.{Matchers, WordSpec}
 import Grid.ShipPlacement.Direction._
+import server.battleship.Grid.ShipPlacement
 
 class GridSpec extends WordSpec with Matchers {
 
@@ -108,7 +109,11 @@ class GridSpec extends WordSpec with Matchers {
       val grid = Grid(correctShipPlacements)
       val (newGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       attackResult shouldBe Hit
-      newGrid.shipPlacements.find(sp => sp.ship == Ship.carrier).get.hits should contain(hitPoint)
+      newGrid.shipPlacements.find(sp => sp.ship == Ship.carrier) match {
+        case Some(s) => s.hits should contain(hitPoint)
+        case _ => fail()
+      }
+
     }
 
     "return the same grid and Miss if attack is unsuccessful" in {
