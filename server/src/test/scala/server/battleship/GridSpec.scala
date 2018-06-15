@@ -2,7 +2,6 @@ package server.battleship
 
 import org.scalatest.{Matchers, WordSpec}
 import Grid.ShipPlacement.Direction._
-import server.battleship.Grid.{Hit, Miss, ShipPlacement}
 
 class GridSpec extends WordSpec with Matchers {
 

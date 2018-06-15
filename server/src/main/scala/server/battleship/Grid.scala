@@ -1,37 +1,6 @@
 package server.battleship
 
-import server.battleship.Grid._
-
-sealed trait Message
-
-case object YouBeatMe extends Message
-
-case class YouSankMy(ship: Ship) extends Message
-
 object Grid {
-
-  sealed trait AttackResult {
-    def getMessage: String
-  }
-
-  case object Hit extends AttackResult {
-
-    val getMessage = "You hit my ship!"
-  }
-
-  case class Sunk(ship: Ship) extends AttackResult {
-
-    def getMessage = s"You sunk my ${ship.name}!"
-  }
-
-  case object Miss extends AttackResult {
-
-    val getMessage = "You miss"
-  }
-
-  case object Win extends AttackResult {
-    val getMessage = "You win!"
-  }
 
   val size = 10
 
