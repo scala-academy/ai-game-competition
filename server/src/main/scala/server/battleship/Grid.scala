@@ -57,9 +57,9 @@ object Grid {
 case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
   require(shipPlacements.size == 5, "Ship number is incorrect")
   require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types of ship are present")
-  require(overlaps.isEmpty, "Ships overlap at point(s) " + overlaps.toString)
+  require(overlaps.isEmpty, "Ships overlap at point(s) " + overlaps.mkString(", "))
 
-  lazy val overlaps: Set[(Int, Char)] = {
+  def overlaps: Set[(Int, Char)] = {
     val points = shipPlacements.map(_.getPositionPoints).toList.flatten
     points
     .groupBy(identity)

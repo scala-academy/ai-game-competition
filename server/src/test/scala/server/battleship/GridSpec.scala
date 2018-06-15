@@ -64,7 +64,7 @@ class GridSpec extends WordSpec with Matchers {
         val wrongPlacement = correctShipPlacements - carrierP + carrierP.copy(row = 5)
         val _ = Grid(wrongPlacement)
       }
-      assert(exception.getMessage.contains("Set((5,D))"))
+      exception.getMessage shouldBe "requirement failed: Ships overlap at point(s) (5,D)"
 
     }
 
