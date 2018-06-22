@@ -16,6 +16,8 @@ object Grid {
 
   }
 
+  //TODO: Create a type alias or case class with a row and col
+
   case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)] = Set()) {
     require({
       val leftCorrect = col >= 'A'

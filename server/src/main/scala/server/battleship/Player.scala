@@ -6,11 +6,14 @@ import server.battleship.Grid.ShipPlacement.Direction.{HORIZONTAL, VERTICAL}
 
 trait Player {
   val shipPlacements : Set[ShipPlacement]
+  def getAttack:(Int, Char)
 }
 
 
 object Human extends Player {
-  override val shipPlacements: Set[ShipPlacement] = Artificial.shipPlacements
+  override val shipPlacements: Set[ShipPlacement] = Artificial.shipPlacements - Artificial.carrierP + Artificial.carrierP.copy(col = 'B')
+
+  override def getAttack: (Int, Char) = ???
 }
 object Artificial extends Player {
 
@@ -21,4 +24,6 @@ object Artificial extends Player {
   val destroyerP = Grid.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
 
   override val shipPlacements: Set[ShipPlacement] = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
+
+  override def getAttack: (Int, Char) = ???
 }
