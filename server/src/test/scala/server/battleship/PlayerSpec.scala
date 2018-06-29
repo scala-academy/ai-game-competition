@@ -7,6 +7,7 @@ import server.battleship.GridImpl.ShipPlacement.Direction.{HORIZONTAL, VERTICAL}
 
 
 class PlayerSpec extends WordSpec with Matchers {
+
   val nullOut = new OutputStream {
     override def write(b: Int): Unit = ()
   }
@@ -37,6 +38,20 @@ class PlayerSpec extends WordSpec with Matchers {
 
       mockStdIn(input, {
         val shipPlacements = Human.addShips
+        shipPlacements shouldBe expected
+      })
+
+    }
+
+    "Pick ship placements with incorrect input" in {
+      val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
+
+      val expected = Set(carrierP)
+
+      val input = "111 A H\n1 A H"
+
+      mockStdIn(input, {
+        val shipPlacements = Human.getShipPlacements(Seq(Ship.carrier))
         shipPlacements shouldBe expected
       })
 
