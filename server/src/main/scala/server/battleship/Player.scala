@@ -14,6 +14,7 @@ trait Player {
 
 object Human {
   def addShips(): Set[ShipPlacement] = {
+    //TODO make this pretty
     println("Hello. Please give us your input in the format row column H/V")
     val Array(caRow, caCol, caDirection) = StdIn.readLine("Carrier: ").split(" ")
     val Array(baRow, baCol, baDirection) = StdIn.readLine("Battleship: ").split(" ")
