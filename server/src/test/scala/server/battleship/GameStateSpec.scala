@@ -4,14 +4,16 @@ import org.scalatest.{Matchers, WordSpec}
 
 class GameStateSpec extends WordSpec with Matchers {
 
-  val mockPlayer1 = new Player{
-    override val shipPlacements = Human.shipPlacements
-    override def getAttack = (3,'C')
+  val mockPlayer1 = new Player {
+    override val shipPlacements = Human().shipPlacements
+
+    override def getAttack = (3, 'C')
   }
 
-  val mockPlayer2 = new Player{
+  val mockPlayer2 = new Player {
     override val shipPlacements = Artificial.shipPlacements
-    override def getAttack = Human.shipPlacements.iterator.next().getPositionPoints.iterator.next()
+
+    override def getAttack = Human().shipPlacements.iterator.next().getPositionPoints.iterator.next()
   }
 
   val gameState = GameState.create(mockPlayer1, mockPlayer2)
@@ -28,12 +30,12 @@ class GameStateSpec extends WordSpec with Matchers {
 
   "The game" should {
     "pick a random player to start" in {
-      val startingPlayers = for(i <- 1 to 10) yield GameState.create(mockPlayer1, mockPlayer2).playerOnTurn
+      val startingPlayers = for (i <- 1 to 10) yield GameState.create(mockPlayer1, mockPlayer2).playerOnTurn
       startingPlayers.toSet.size shouldBe 2
     }
     "alternate player turns after the initial move" in {
       val currentPlayer = gameState.playerOnTurn
-      val newGame : GameState = gameState.move._1
+      val newGame: GameState = gameState.move._1
       newGame.playerOnTurn should not be currentPlayer
 
     }
@@ -47,39 +49,32 @@ class GameStateSpec extends WordSpec with Matchers {
     }
     "notify both players if someone won" in {
       val positions = gameState.grid1.shipPlacements.flatMap(_.getPositionPoints).toSeq
-      val almostFinishedGrid = positions.tail.foldLeft(gameState.grid1){case (grid, (row, col)) => grid.attack(row, col)._1}
+      val almostFinishedGrid = positions.tail.foldLeft(gameState.grid1) { case (grid, (row, col)) => grid.attack(row, col)._1 }
       val mockPlayer = new Player {
-        override def getAttack: (Int, Char) = {positions.head}
-        override val shipPlacements: Set[Grid.ShipPlacement] = Human.shipPlacements
+        override def getAttack: (Int, Char) = {
+          positions.head
+        }
+
+        override val shipPlacements: Set[GridImpl.ShipPlacement] = Human().shipPlacements
       }
 
       val newGame = GameState(mockPlayer, gameState.grid1, mockPlayer2, almostFinishedGrid)
-      val (finishedGame, message) = newGame.move
+      val (_, message) = newGame.move
       message shouldBe Win
     }
-    "notify the players on the results of the actions of the players" in {
+    "notify the player on the results of their actions" in {
+      def mockGrid(attackResult: AttackResult): Grid = new Grid {
+        override def attack(row: Int, col: Char): (Grid, AttackResult) = (gameState.grid1, attackResult)
+        override val shipPlacements: Set[GridImpl.ShipPlacement] = Set.empty
+      }
 
-    }
-  }
+      val attackResult = Set(Hit, Miss, Sunk(Ship.battleShip))
 
-  "attack" should {
-    "return the result of the move (Hit, Miss and optional a message)" in {
-
-    }
-    "keep track of the moves done for the player (track state)" in {
-
-    }
-    "return an error when the grids are not initialized yet" in {
-
-    }
-    "return an error for invalid input" in {
-
-    }
-  }
-
-  "currentState" should {
-    "return the current state of the game" in {
-
+      attackResult.foreach(ar => {
+        val game = GameState(mockPlayer1, mockGrid(ar), mockPlayer1, mockGrid(ar))
+        val (_, missResult) = game.move
+        missResult shouldBe ar
+      })
     }
   }
 
