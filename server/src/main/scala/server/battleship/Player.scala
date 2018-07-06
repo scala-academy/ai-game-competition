@@ -4,6 +4,7 @@ import server.battleship.GridImpl.ShipPlacement
 import server.battleship.GridImpl.ShipPlacement.Direction.{HORIZONTAL, VERTICAL}
 
 import scala.io.StdIn
+import scala.util.{Failure, Success, Try}
 
 
 trait Player {
@@ -13,23 +14,33 @@ trait Player {
 }
 
 object Human {
-  def addShips(): Set[ShipPlacement] = {
-    //TODO make this pretty
-    println("Hello. Please give us your input in the format row column H/V")
-    val Array(caRow, caCol, caDirection) = StdIn.readLine("Carrier: ").split(" ")
-    val Array(baRow, baCol, baDirection) = StdIn.readLine("Battleship: ").split(" ")
-    val Array(crRow, crCol, crDirection) = StdIn.readLine("Cruiser: ").split(" ")
-    val Array(suRow, suCol, suDirection) = StdIn.readLine("Submarine: ").split(" ")
-    val Array(deRow, deCol, deDirection) = StdIn.readLine("Destroyer: ").split(" ")
+  def addShips: Set[ShipPlacement] = {
 
-    Set(
-      ShipPlacement(Ship.carrier, caRow.toInt, caCol.charAt(0), caDirection == "H"),
-      ShipPlacement(Ship.battleShip, baRow.toInt, baCol.charAt(0), baDirection == "H"),
-      ShipPlacement(Ship.cruiser, crRow.toInt, crCol.charAt(0), crDirection == "H"),
-      ShipPlacement(Ship.submarine, suRow.toInt, suCol.charAt(0), suDirection == "H"),
-      ShipPlacement(Ship.destroyer, deRow.toInt, deCol.charAt(0), deDirection == "H")
-    )
+    println("Hello. Please give us your input in the format row column H/V (e.g. \"1 A V\"")
+
+    val sortedShips = Ship.allShips.toSeq.sortBy(ship => (-ship.size, ship.name))
+    getShipPlacements(sortedShips)
   }
+
+  private[battleship] def getShipPlacements(todo: Seq[Ship], acc: Set[ShipPlacement] = Set.empty): Set[ShipPlacement] =
+    todo match {
+      case Nil =>
+        acc
+      case ship +: ships =>
+        val input = StdIn.readLine(s"${ship.name}: ")
+        val Array(row, col, direction) = input.split(" ")
+
+        Try(ShipPlacement(ship, row.toInt, col.charAt(0), direction == "H")) match {
+          case Success(shipPlacement) =>
+            getShipPlacements(ships, acc + shipPlacement)
+          case Failure(_: IllegalArgumentException) =>
+            println(s"Incorrect placement: $input")
+            getShipPlacements(todo, acc)
+          case Failure(_) =>
+            println(s"Garbage input: $input")
+            getShipPlacements(todo, acc)
+        }
+    }
 }
 
 case class Human(shipPlacements: Set[ShipPlacement] =
