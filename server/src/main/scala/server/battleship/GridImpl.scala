@@ -61,6 +61,21 @@ object GridImpl {
 trait Grid {
   def attack(row: Int, col: Char): (Grid, AttackResult)
   def shipPlacements: Set[GridImpl.ShipPlacement]
+
+  def gridAsRowStrings: Seq[String] = {
+    val locations = for {
+      r <- 1 to GridImpl.size
+      c <- 'A' until ('A' + GridImpl.size).toChar
+    } yield {
+      shipPlacements.find(_.getPositionPoints.contains((r, c))) match {
+        case None => "-"
+        case Some(shipPlacement) if !shipPlacement.hits.contains((r, c)) => shipPlacement.ship.symbol
+        case _ => "X"
+      }
+    }
+    locations.sliding(10, 10).map(_.mkString(" ")).toSeq
+  }
+
 }
 
 case class GridImpl(shipPlacements: Set[GridImpl.ShipPlacement]) extends Grid {
