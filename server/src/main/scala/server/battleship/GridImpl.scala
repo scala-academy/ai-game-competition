@@ -2,8 +2,6 @@ package server.battleship
 
 object GridImpl {
 
-  //TODO (Maybe) Add a grid builder for players to place their ships one by one
-
   val size = 10
 
   object ShipPlacement {

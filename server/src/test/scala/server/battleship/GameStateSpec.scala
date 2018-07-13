@@ -34,17 +34,19 @@ class GameStateSpec extends WordSpec with Matchers {
       startingPlayers.toSet.size shouldBe 2
     }
     "alternate player turns after the initial move" in {
-      val currentPlayer = gameState.playerOnTurn
-      val newGame: GameState = gameState.move._1
-      newGame.playerOnTurn should not be currentPlayer
+      val (row, col) = gameState.playerOnTurn.getAttack
+      val newGame: GameState = gameState.processMove(row, col)._1
+      newGame.playerOnTurn should not be gameState.playerOnTurn
 
     }
     "grids should be updated with the move of a player" in {
-      val newGame = gameState.move._1
+      val (missRow, missCol) = gameState.playerOnTurn.getAttack
+      val newGame = gameState.processMove(missRow, missCol)._1
       //It misses
       newGame.grid1 shouldBe gameState.grid2
       //Gets a hit
-      val newGame2 = newGame.move._1
+      val (hitRow, hitCol) = newGame.playerOnTurn.getAttack
+      val newGame2 = newGame.processMove(hitRow, hitCol)._1
       newGame2.grid1 should not be newGame.grid2
     }
     "notify both players if someone won" in {
@@ -59,7 +61,8 @@ class GameStateSpec extends WordSpec with Matchers {
       }
 
       val newGame = GameState(mockPlayer, gameState.grid1, mockPlayer2, almostFinishedGrid)
-      val (_, message) = newGame.move
+      val (row, col) = newGame.playerOnTurn.getAttack
+      val (_, message) = newGame.processMove(row, col)
       message shouldBe Win
     }
     "notify the player on the results of their actions" in {
@@ -72,7 +75,8 @@ class GameStateSpec extends WordSpec with Matchers {
 
       attackResult.foreach(ar => {
         val game = GameState(mockPlayer1, mockGrid(ar), mockPlayer1, mockGrid(ar))
-        val (_, missResult) = game.move
+        val (row, col) = game.playerOnTurn.getAttack
+        val (_, missResult) = game.processMove(row, col)
         missResult shouldBe ar
       })
     }

@@ -22,6 +22,8 @@ object Human {
     getShipPlacements(sortedShips)
   }
 
+
+
   private[battleship] def getShipPlacements(todo: Seq[Ship], acc: Set[ShipPlacement] = Set.empty): Set[ShipPlacement] =
     todo match {
       case Nil =>
@@ -63,5 +65,5 @@ object Artificial extends Player {
 
   override val shipPlacements: Set[ShipPlacement] = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
 
-  override def getAttack: (Int, Char) = ???
+  override def getAttack: (Int, Char) = (1, 'A')
 }
