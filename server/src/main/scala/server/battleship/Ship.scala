@@ -11,4 +11,8 @@ object Ship {
   val allShipTypes = allShips.map(_.name)
 }
 
-case class Ship private(size: Int, name: String)
+case class Ship private(size: Int, name: String) {
+  def symbol =
+    if (this == Ship.cruiser) 'c'
+    else name.charAt(0)
+}

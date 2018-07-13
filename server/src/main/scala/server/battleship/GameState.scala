@@ -21,4 +21,14 @@ case class GameState private[battleship](playerOnTurn: Player, grid1: Grid, oppo
     println("Player: " + opponent.getClass.getSimpleName +  " Message: " + message.getMessage)
     (GameState(opponent, newGrid2, playerOnTurn, grid1), message)
   }
+
+  def gameStateAsString: String = {
+    val g1 = grid1.gridAsRowStrings
+    val g2 = grid2.gridAsRowStrings
+
+    val result = StringBuilder.newBuilder
+    for ((g1Row, g2Row) <- g1 zip g2) result.append(s"$g1Row | $g2Row\n")
+
+    result.mkString
+  }
 }

@@ -82,4 +82,10 @@ class GameStateSpec extends WordSpec with Matchers {
     }
   }
 
+  "gameStateAsString" should {
+    "return the two grids as a pretty string" in {
+      println(gameState.gameStateAsString)
+    }
+  }
+
 }
