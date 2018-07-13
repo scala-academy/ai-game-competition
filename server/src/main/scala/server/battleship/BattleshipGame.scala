@@ -13,9 +13,11 @@ object BattleshipGame extends App {
   playGameTillEnd(initialState)
 
   def playGameTillEnd(gameState: GameState): Unit = {
+    println(gameState.gameStateAsString)
     val playerOnTurn = gameState.playerOnTurn
     val (row, col) = playerOnTurn.getAttack
     val (newGameState, attackResult) = gameState.processMove(row, col)
+
     if(attackResult == Win) ()
     else playGameTillEnd(newGameState)
   }
