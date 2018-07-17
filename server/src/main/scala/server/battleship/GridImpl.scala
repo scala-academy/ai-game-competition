@@ -16,36 +16,37 @@ object GridImpl {
 
   //TODO: Create a type alias or case class with a row and col
 
-  case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)] = Set()) {
+  case class ShipPlacement(ship: Ship, point: Point, isHorizontal: Boolean, hits: Set[Point] = Set()) {
     require({
-      val leftCorrect = col >= 'A'
+      val leftCorrect = point.col >= 'A'
       val rightCorrect =
-        if (isHorizontal) col + ship.size <= 'A' + size
-        else col <= 'A' + size
+        if (isHorizontal) point.col + ship.size <= 'A' + size
+        else point.col <= 'A' + size
       leftCorrect && rightCorrect
     }, "Column out of boundaries")
     require({
-      val upCorrect = row >= 1
+      val upCorrect = point.row >= 1
       val downCorrect =
-        if (isHorizontal) row <= size
-        else row + ship.size <= 1 + size
+        if (isHorizontal) point.row <= size
+        else point.row + ship.size <= 1 + size
       upCorrect && downCorrect
     }, "Row out of boundaries")
     require(hits.forall(isHit), "Invalid hit point(s)")
 
 
-    lazy val getPositionPoints: Set[(Int, Char)] = {
+    lazy val getPositionPoints: Set[Point] = {
+
       (0 until ship.size).map(index => {
-        if (isHorizontal) (row, (col + index).toChar)
-        else (row + index, col)
+        if (isHorizontal) point.copy(col=(point.col + index).toChar)
+        else point.copy(row = point.row + index)
       }).toSet
     }
 
-    def isHit(hitPoint: (Int, Char)): Boolean = {
+    def isHit(hitPoint: Point): Boolean = {
       getPositionPoints.contains(hitPoint)
     }
 
-    def hit(hitPoint: (Int, Char)): ShipPlacement = {
+    def hit(hitPoint: Point): ShipPlacement = {
 
       this.copy(hits = this.hits + hitPoint)
     }
@@ -57,7 +58,7 @@ object GridImpl {
 }
 
 trait Grid {
-  def attack(row: Int, col: Char): (Grid, AttackResult)
+  def attack(point: Point): (Grid, AttackResult)
   def shipPlacements: Set[GridImpl.ShipPlacement]
 
   def gridAsRowStrings: Seq[String] = {
@@ -65,9 +66,9 @@ trait Grid {
       r <- 1 to GridImpl.size
       c <- 'A' until ('A' + GridImpl.size).toChar
     } yield {
-      shipPlacements.find(_.getPositionPoints.contains((r, c))) match {
+      shipPlacements.find(_.getPositionPoints.contains(Point(r, c))) match {
         case None => "-"
-        case Some(shipPlacement) if !shipPlacement.hits.contains((r, c)) => shipPlacement.ship.symbol
+        case Some(shipPlacement) if !shipPlacement.hits.contains(Point(r, c)) => shipPlacement.ship.symbol
         case _ => "X"
       }
     }
@@ -81,7 +82,7 @@ case class GridImpl(shipPlacements: Set[GridImpl.ShipPlacement]) extends Grid {
   require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types of ship are present")
   require(overlaps.isEmpty, "Ships overlap at point(s) " + overlaps.mkString(", "))
 
-  private def overlaps: Set[(Int, Char)] = {
+  private def overlaps: Set[Point] = {
     val points = shipPlacements.map(_.getPositionPoints).toList.flatten
     points
     .groupBy(identity)
@@ -89,13 +90,13 @@ case class GridImpl(shipPlacements: Set[GridImpl.ShipPlacement]) extends Grid {
     .toSet
   }
 
-  override def attack(row: Int, col: Char): (Grid, AttackResult) = {
-    shipPlacements.find(sp => sp.isHit((row, col))) match {
+  override def attack(point: Point): (Grid, AttackResult) = {
+    shipPlacements.find(sp => sp.isHit(point)) match {
       case None =>
         (this, Miss)
 
       case Some(shipP) =>
-        val newHit = (row, col)
+        val newHit = point
         val newShipP = shipP.copy(hits = shipP.hits + newHit)
         val newGrid = GridImpl(shipPlacements - shipP + newShipP)
         val attackResult =

@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 trait Player {
   val shipPlacements: Set[ShipPlacement]
 
-  def getAttack: (Int, Char)
+  def getAttack: Point
 }
 
 object Human {
@@ -32,7 +32,7 @@ object Human {
         val input = StdIn.readLine(s"${ship.name}: ")
         val Array(row, col, direction) = input.split(" ")
 
-        Try(ShipPlacement(ship, row.toInt, col.charAt(0), direction == "H")) match {
+        Try(ShipPlacement(ship, Point(row.toInt, col.charAt(0)), direction == "H")) match {
           case Success(shipPlacement) =>
             getShipPlacements(ships, acc + shipPlacement)
           case Failure(_: IllegalArgumentException) =>
@@ -46,24 +46,24 @@ object Human {
 }
 
 case class Human(shipPlacements: Set[ShipPlacement] =
-                 Artificial.shipPlacements - Artificial.carrierP + Artificial.carrierP.copy(col = 'B')) extends Player {
+                 Artificial.shipPlacements - Artificial.carrierP + Artificial.carrierP.copy(point = Artificial.carrierP.point.copy(col = 'B'))) extends Player {
 
-  override def getAttack: (Int, Char) = {
+  override def getAttack: Point = {
     val Array(row, column) = StdIn.readLine("Define your attack point row column ").split(" ")
-    (row.toInt, column.charAt(0))
+    Point(row.toInt, column.charAt(0))
   }
 
 }
 
 object Artificial extends Player {
 
-  val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
-  val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
-  val cruiserP = GridImpl.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL)
-  val submarineP = GridImpl.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL)
-  val destroyerP = GridImpl.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
+  val carrierP = GridImpl.ShipPlacement(Ship.carrier, Point(1, 'A'), HORIZONTAL)
+  val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, Point(4, 'D'), VERTICAL)
+  val cruiserP = GridImpl.ShipPlacement(Ship.cruiser,Point(2, 'H'), HORIZONTAL)
+  val submarineP = GridImpl.ShipPlacement(Ship.submarine, Point(10, 'H'), HORIZONTAL)
+  val destroyerP = GridImpl.ShipPlacement(Ship.destroyer, Point(9, 'A'), VERTICAL)
 
   override val shipPlacements: Set[ShipPlacement] = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
 
-  override def getAttack: (Int, Char) = (1, 'A')
+  override def getAttack: Point = Point(1, 'A')
 }
