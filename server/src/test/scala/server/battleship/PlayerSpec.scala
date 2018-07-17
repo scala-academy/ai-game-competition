@@ -25,11 +25,11 @@ class PlayerSpec extends WordSpec with Matchers {
 
     "Pick ship placements" in {
 
-      val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
-      val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
-      val cruiserP = GridImpl.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL)
-      val submarineP = GridImpl.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL)
-      val destroyerP = GridImpl.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
+      val carrierP = GridImpl.ShipPlacement(Ship.carrier, Point(1, 'A'), HORIZONTAL)
+      val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, Point(4, 'D'), VERTICAL)
+      val cruiserP = GridImpl.ShipPlacement(Ship.cruiser, Point(2, 'H'), HORIZONTAL)
+      val submarineP = GridImpl.ShipPlacement(Ship.submarine, Point(10, 'H'), HORIZONTAL)
+      val destroyerP = GridImpl.ShipPlacement(Ship.destroyer, Point(9, 'A'), VERTICAL)
 
       val expected = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
 
@@ -44,7 +44,7 @@ class PlayerSpec extends WordSpec with Matchers {
     }
 
     "Pick ship placements with incorrect input" in {
-      val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
+      val carrierP = GridImpl.ShipPlacement(Ship.carrier, Point(1, 'A'), HORIZONTAL)
 
       val expected = Set(carrierP)
 
@@ -64,7 +64,7 @@ class PlayerSpec extends WordSpec with Matchers {
 
       val input = "1 A"
       mockStdIn(input, {
-        Human().getAttack shouldBe(1, 'A')
+        Human().getAttack shouldBe Point(1, 'A')
       })
 
     }

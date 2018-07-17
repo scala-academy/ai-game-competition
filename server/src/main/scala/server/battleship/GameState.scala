@@ -15,8 +15,8 @@ object GameState {
 
 case class GameState private[battleship](playerOnTurn: Player, grid1: Grid, opponent: Player, grid2: Grid) {
 
-  def processMove(row: Int, col: Char): (GameState, AttackResult) = {
-    val (newGrid2, message) = grid2.attack(row, col)
+  def processMove(point: Point): (GameState, AttackResult) = {
+    val (newGrid2, message) = grid2.attack(point)
     //TODO remove this!
     println("Player: " + opponent.getClass.getSimpleName +  " Message: " + message.getMessage)
     (GameState(opponent, newGrid2, playerOnTurn, grid1), message)
