@@ -4,13 +4,15 @@ import server.battleship.GridImpl.ShipPlacement
 import server.battleship.GridImpl.ShipPlacement.Direction.{HORIZONTAL, VERTICAL}
 
 import scala.io.StdIn
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Random, Success, Try}
 
 
 trait Player {
   val shipPlacements: Set[ShipPlacement]
 
   def getAttack: (Int, Char)
+
+  def processAttackResult(attackResult: AttackResult): Unit = ()
 }
 
 object Human {
@@ -46,7 +48,7 @@ object Human {
 }
 
 case class Human(shipPlacements: Set[ShipPlacement] =
-                 Artificial.shipPlacements - Artificial.carrierP + Artificial.carrierP.copy(col = 'B')) extends Player {
+                 DummyAI.shipPlacements - DummyAI.carrierP + DummyAI.carrierP.copy(col = 'B')) extends Player {
 
   override def getAttack: (Int, Char) = {
     val Array(row, column) = StdIn.readLine("Define your attack point row column ").split(" ")
@@ -55,7 +57,7 @@ case class Human(shipPlacements: Set[ShipPlacement] =
 
 }
 
-object Artificial extends Player {
+object DummyAI extends Player {
 
   val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
   val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
@@ -66,4 +68,21 @@ object Artificial extends Player {
   override val shipPlacements: Set[ShipPlacement] = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
 
   override def getAttack: (Int, Char) = (1, 'A')
+}
+
+object RandomAttackAI extends Player {
+  val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
+  val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
+  val cruiserP = GridImpl.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL)
+  val submarineP = GridImpl.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL)
+  val destroyerP = GridImpl.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
+
+  override val shipPlacements: Set[ShipPlacement] = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
+
+  override def getAttack: (Int, Char) = {
+    val random = new Random()
+    val row = random.nextInt(10)
+    val col = (random.nextInt(10)+'A').toChar
+    (row, col)
+  }
 }

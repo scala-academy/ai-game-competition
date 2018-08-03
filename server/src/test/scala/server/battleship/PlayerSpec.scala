@@ -68,9 +68,17 @@ class PlayerSpec extends WordSpec with Matchers {
       })
 
     }
+  }
 
-    "Receive notifications" in {
+  "A RandomAttackAI" should {
+    "Make random attacks" in {
+      def getAttackSequence = (1 to 10).map(_ => RandomAttackAI.getAttack)
 
+      val numberOfSequences = 5
+      //Compare different sequences of attacks should be different
+      val attackSequences: Set[Seq[(Int, Char)]] = (1 to numberOfSequences).map { _ => getAttackSequence }.toSet
+
+      attackSequences.size shouldBe numberOfSequences
     }
   }
 

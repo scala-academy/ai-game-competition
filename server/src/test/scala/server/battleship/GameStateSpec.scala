@@ -11,7 +11,7 @@ class GameStateSpec extends WordSpec with Matchers {
   }
 
   val mockPlayer2 = new Player {
-    override val shipPlacements = Artificial.shipPlacements
+    override val shipPlacements = DummyAI.shipPlacements
 
     override def getAttack = Human().shipPlacements.iterator.next().getPositionPoints.iterator.next()
   }

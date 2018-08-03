@@ -1,10 +1,14 @@
 package server
 
-import com.twitter.util.Await
+import server.battleship.BattleshipGame
 
 object Main extends App {
-  val defaultPort = 8080
+  //val defaultPort = 8080
 
-  Await.ready(Server(defaultPort).server)
+  //Await.ready(Server(defaultPort).server)
+
+  val game = BattleshipGame.createDefaultGame
+
+  game.playGameTillEnd(game.initialState)
 
 }
