@@ -8,7 +8,7 @@ class BattleshipGameTest extends WordSpec with Matchers {
 
   "Players" should {
 
-    "Receive notifications" in {
+    "Receive win notifications when they win" in {
       def player = new Player {
         var received = false
         var attacks = DummyAI.shipPlacements.flatMap(_.getPositionPoints).toSeq

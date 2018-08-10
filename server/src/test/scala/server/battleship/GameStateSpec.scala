@@ -5,7 +5,7 @@ import org.scalatest.{Matchers, WordSpec}
 class GameStateSpec extends WordSpec with Matchers {
 
   val mockPlayer1 = new Player {
-    override val shipPlacements = Human().shipPlacements
+    override val shipPlacements = new HumanInterface().shipPlacements
 
     override def getAttack = (3, 'C')
   }
@@ -13,7 +13,7 @@ class GameStateSpec extends WordSpec with Matchers {
   val mockPlayer2 = new Player {
     override val shipPlacements = DummyAI.shipPlacements
 
-    override def getAttack = Human().shipPlacements.iterator.next().getPositionPoints.iterator.next()
+    override def getAttack = new HumanInterface().shipPlacements.iterator.next().getPositionPoints.iterator.next()
   }
 
   val gameState = GameState.create(mockPlayer1, mockPlayer2)
@@ -57,7 +57,7 @@ class GameStateSpec extends WordSpec with Matchers {
           positions.head
         }
 
-        override val shipPlacements: Set[GridImpl.ShipPlacement] = Human().shipPlacements
+        override val shipPlacements: Set[GridImpl.ShipPlacement] = new HumanInterface().shipPlacements
       }
 
       val newGame = GameState(mockPlayer, gameState.grid1, mockPlayer2, almostFinishedGrid)
@@ -84,7 +84,19 @@ class GameStateSpec extends WordSpec with Matchers {
 
   "gameStateAsString" should {
     "return the two grids as a pretty string" in {
-      println(gameState.gameStateAsString)
+      val twoGrids = gameState.gameStateAsString
+
+      twoGrids shouldBe """- C C C C C - - - - | C C C C C - - - - -
+                          |- - - - - - - c c c | - - - - - - - c c c
+                          |- - - - - - - - - - | - - - - - - - - - -
+                          |- - - B - - - - - - | - - - B - - - - - -
+                          |- - - B - - - - - - | - - - B - - - - - -
+                          |- - - B - - - - - - | - - - B - - - - - -
+                          |- - - B - - - - - - | - - - B - - - - - -
+                          |- - - - - - - - - - | - - - - - - - - - -
+                          |D - - - - - - - - - | D - - - - - - - - -
+                          |D - - - - - - S S S | D - - - - - - S S S
+                          |""".stripMargin
     }
   }
 

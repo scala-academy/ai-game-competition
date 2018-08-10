@@ -12,6 +12,11 @@ class PlayerSpec extends WordSpec with Matchers {
     override def write(b: Int): Unit = ()
   }
 
+  val stringOut = new OutputStream {
+    val stringBuilder = new StringBuilder
+    override def write(i: Int): Unit = stringBuilder.append(i.toChar)
+  }
+
   def mockStdIn(input: String, body: => Unit): Unit = {
     val in = new ByteArrayInputStream(input.getBytes)
     Console.withIn(in) {
@@ -21,7 +26,14 @@ class PlayerSpec extends WordSpec with Matchers {
     }
   }
 
-  "A Human player" should {
+  def mockStdOut(body: => Unit): String = {
+    Console.withOut(stringOut) {
+      body
+    }
+    stringOut.stringBuilder.mkString
+  }
+
+  "A Human interface player" should {
 
     "Pick ship placements" in {
 
@@ -37,7 +49,7 @@ class PlayerSpec extends WordSpec with Matchers {
       val input = "1 A H\n4 D V\n2 H H\n10 H H\n9 A V"
 
       mockStdIn(input, {
-        val shipPlacements = Human.addShips
+        val shipPlacements = HumanInterface.addShips
         shipPlacements shouldBe expected
       })
 
@@ -51,9 +63,47 @@ class PlayerSpec extends WordSpec with Matchers {
       val input = "111 A H\n1 A H"
 
       mockStdIn(input, {
-        val shipPlacements = Human.getShipPlacements(Seq(Ship.carrier))
+        val shipPlacements = HumanInterface.getShipPlacements(Seq(Ship.carrier))
         shipPlacements shouldBe expected
       })
+
+    }
+
+    "display the players attacks in a grid" in {
+
+      val humanInterface = new HumanInterface() {
+
+        var attacks = (2, 'B') +: (0 to 4).map(i => (1, ('A' + i).toChar))
+
+        override def getAttack: (Int, Char) = {
+          val currentAttack = attacks.head
+          attacks = attacks.tail
+          currentAttack
+        }
+      }
+
+      val results = Seq(Miss, Hit, Hit, Hit, Hit, Sunk(Ship.carrier))
+
+      for(r <- results) {
+        humanInterface.getAttack
+        humanInterface.processAttackResult(r)
+      }
+
+      val outputGrid = mockStdOut({
+        humanInterface.showAttackGrid()
+      })
+
+      outputGrid shouldBe """X X X X C · · · · ·
+                            |· ~ · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |· · · · · · · · · ·
+                            |""".stripMargin
 
     }
 
@@ -64,7 +114,7 @@ class PlayerSpec extends WordSpec with Matchers {
 
       val input = "1 A"
       mockStdIn(input, {
-        Human().getAttack shouldBe(1, 'A')
+        new HumanInterface().getAttack shouldBe(1, 'A')
       })
 
     }

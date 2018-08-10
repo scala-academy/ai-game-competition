@@ -3,7 +3,7 @@ package server.battleship
 object BattleshipGame {
 
   def createDefaultGame: BattleshipGame = {
-    val human = Human(Human.addShips)
+    val human = new HumanInterface(HumanInterface.addShips)
     val opponent = DummyAI
     BattleshipGame(human, opponent)
   }

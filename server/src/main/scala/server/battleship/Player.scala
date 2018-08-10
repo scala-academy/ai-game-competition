@@ -15,7 +15,7 @@ trait Player {
   def processAttackResult(attackResult: AttackResult): Unit = ()
 }
 
-object Human {
+object HumanInterface {
   def addShips: Set[ShipPlacement] = {
 
     println("Hello. Please give us your input in the format row column H/V (e.g. \"1 A V\"")
@@ -23,8 +23,6 @@ object Human {
     val sortedShips = Ship.allShips.toSeq.sortBy(ship => (-ship.size, ship.name))
     getShipPlacements(sortedShips)
   }
-
-
 
   private[battleship] def getShipPlacements(todo: Seq[Ship], acc: Set[ShipPlacement] = Set.empty): Set[ShipPlacement] =
     todo match {
@@ -47,12 +45,38 @@ object Human {
     }
 }
 
-case class Human(shipPlacements: Set[ShipPlacement] =
+class HumanInterface(val shipPlacements: Set[ShipPlacement] =
                  DummyAI.shipPlacements - DummyAI.carrierP + DummyAI.carrierP.copy(col = 'B')) extends Player {
+
+  private var attackResults: Map[(Int, Char), AttackResult] = Map.empty
+  private var lastAttack: (Int, Char) = _
 
   override def getAttack: (Int, Char) = {
     val Array(row, column) = StdIn.readLine("Define your attack point row column ").split(" ")
-    (row.toInt, column.charAt(0))
+    lastAttack = (row.toInt, column.charAt(0))
+    lastAttack
+  }
+
+  override def processAttackResult(attackResult: AttackResult): Unit = {
+    println(" Message: " + attackResult.getMessage)
+    attackResults = attackResults + (lastAttack -> attackResult)
+  }
+
+  def showAttackGrid(): Unit = {
+    val locations = for {
+      r <- 1 to GridImpl.size
+      c <- 'A' until ('A' + GridImpl.size).toChar
+    } yield {
+      attackResults.get((r, c)) match {
+        case None => ' '
+        case Some(Miss) => '~'
+        case Some(Hit) => 'X'
+        case Some(Sunk(ship)) => ship.symbol
+        case Some(Win) => 'W'
+      }
+    }
+    val slided = locations.sliding(10, 10).map(_.mkString(" ")).toSeq
+    println(slided.mkString("\n"))
   }
 
 }
