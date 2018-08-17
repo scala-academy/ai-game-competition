@@ -49,7 +49,7 @@ class HumanInterface(val shipPlacements: Set[ShipPlacement] =
                  DummyAI.shipPlacements - DummyAI.carrierP + DummyAI.carrierP.copy(col = 'B')) extends Player {
 
   private var attackResults: Map[(Int, Char), AttackResult] = Map.empty
-  private var lastAttack: (Int, Char) = _
+  private[battleship] var lastAttack: (Int, Char) = _
 
   override def getAttack: (Int, Char) = {
     val Array(row, column) = StdIn.readLine("Define your attack point row column ").split(" ")
@@ -68,7 +68,7 @@ class HumanInterface(val shipPlacements: Set[ShipPlacement] =
       c <- 'A' until ('A' + GridImpl.size).toChar
     } yield {
       attackResults.get((r, c)) match {
-        case None => ' '
+        case None => '.'
         case Some(Miss) => '~'
         case Some(Hit) => 'X'
         case Some(Sunk(ship)) => ship.symbol

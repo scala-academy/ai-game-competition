@@ -155,7 +155,7 @@ class GridImplSpec extends WordSpec with Matchers {
     }
 
     "return same grid with sunk when you hit an already sunk ship" in {
-      //TODO: Sent funny message if she sends same spot again
+      //TODO: Sent funny message if they send same spot again
       val hitPoint = (9, 'A')
       val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits = Set((10, 'A'), (9, 'A')))
       val grid = GridImpl(newShipPlacement)

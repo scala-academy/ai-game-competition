@@ -76,9 +76,9 @@ class PlayerSpec extends WordSpec with Matchers {
         var attacks = (2, 'B') +: (0 to 4).map(i => (1, ('A' + i).toChar))
 
         override def getAttack: (Int, Char) = {
-          val currentAttack = attacks.head
+          lastAttack = attacks.head
           attacks = attacks.tail
-          currentAttack
+          lastAttack
         }
       }
 
@@ -93,16 +93,16 @@ class PlayerSpec extends WordSpec with Matchers {
         humanInterface.showAttackGrid()
       })
 
-      outputGrid shouldBe """X X X X C · · · · ·
-                            |· ~ · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
-                            |· · · · · · · · · ·
+      outputGrid shouldBe """X X X X C . . . . .
+                            |. ~ . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
+                            |. . . . . . . . . .
                             |""".stripMargin
 
     }
