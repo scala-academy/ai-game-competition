@@ -105,7 +105,7 @@ object RandomAttackAI extends Player {
 
   override def getAttack: (Int, Char) = {
     val random = new Random()
-    val row = random.nextInt(10)
+    val row = 1 + random.nextInt(10)
     val col = (random.nextInt(10)+'A').toChar
     (row, col)
   }

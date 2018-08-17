@@ -6,7 +6,8 @@ import akka.util.Timeout
 
 import scala.concurrent.duration._
 import server.actors.GameActor
-import server.battleship.{BattleshipGame, DummyAI, HumanInterface}
+import server.battleship.{BattleshipGame, DummyAI, HumanInterface, RandomAttackAI}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -16,21 +17,14 @@ object Main extends App {
   //Await.ready(Server(defaultPort).server)
 
 
-
   val system = ActorSystem("Battleship-actorsystem")
 
   implicit val timeout = Timeout(25 millis)
 
-  val gameActor: ActorRef = system.actorOf(GameActor.props(new HumanInterface(), DummyAI))
+  val gameActor: ActorRef = system.actorOf(GameActor.props(RandomAttackAI, DummyAI))
 
-  gameActor ! "Hello"
+  //  val game = BattleshipGame.createDefaultGame
 
-  val response: Future[Any] = gameActor ? "Hello who?"
-
-  response.foreach(println)
-
-//  val game = BattleshipGame.createDefaultGame
-
-//  game.playGameTillEnd(game.initialState)
+  //  game.playGameTillEnd(game.initialState)
 
 }

@@ -1,13 +1,11 @@
 package server.actors
 
-import akka.actor.{Actor, Props}
-import akka.pattern.{ask, pipe}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
-import server.battleship.Player
+import server.actors.Protocol.{Attack, GetAttack, ProcessAttackResult}
+import server.battleship.{GameState, Player, Win}
 
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 object GameActor {
 
@@ -19,17 +17,26 @@ class GameActor(player1: Player, player2: Player) extends Actor {
 
   println("Game actor created")
 
-  val playerActor = context.actorOf(PlayerActor.props(player1), "Player1")
+  val player1Actor = context.actorOf(PlayerActor.props(player1), "Player1")
+  val player2Actor = context.actorOf(PlayerActor.props(player2), "Player2")
+  val players: Map[Player, ActorRef] = Map(player1 -> player1Actor, player2 -> player2Actor)
+
+  var game = GameState.create(player1, player2)
+
+  players(game.playerOnTurn) ! GetAttack
 
   override def receive: Receive = {
-    case s: String if s.contains("who") =>
-      // send a response back
-      val playerResponse: Future[Any] = (playerActor ? "Say something")
-
-      playerResponse foreach { resp =>
-        context.sender() ! resp
+    case Attack(row, col) =>
+      val (newGame, attackResult) = game.processMove(row, col)
+      players(game.playerOnTurn) ! ProcessAttackResult(attackResult)
+      println(game.gameStateAsString)
+      if (attackResult != Win) {
+        game = newGame
+        players(newGame.playerOnTurn) ! GetAttack
+      } else {
       }
-    case s: String => println(s)
-    case _ => ???
+    case otherMsg =>
+      println(s"Not handling $otherMsg")
   }
+
 }
