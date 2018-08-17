@@ -1,10 +1,10 @@
 package server.battleship
 
 import org.scalatest.{Matchers, WordSpec}
-import Grid.ShipPlacement.Direction._
-import server.battleship.Grid.ShipPlacement
+import GridImpl.ShipPlacement.Direction._
+import server.battleship.GridImpl.ShipPlacement
 
-class GridSpec extends WordSpec with Matchers {
+class GridImplSpec extends WordSpec with Matchers {
 
   /*    A B C D E F G H I J
       1 # # # # # * * * * *
@@ -19,30 +19,30 @@ class GridSpec extends WordSpec with Matchers {
      10 # * * * * * * # # #
   */
 
-  val carrierP = Grid.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
-  val battleShipP = Grid.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
-  val cruiserP = Grid.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL)
-  val submarineP = Grid.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL)
-  val destroyerP = Grid.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
+  val carrierP = GridImpl.ShipPlacement(Ship.carrier, 1, 'A', HORIZONTAL)
+  val battleShipP = GridImpl.ShipPlacement(Ship.battleShip, 4, 'D', VERTICAL)
+  val cruiserP = GridImpl.ShipPlacement(Ship.cruiser, 2, 'H', HORIZONTAL)
+  val submarineP = GridImpl.ShipPlacement(Ship.submarine, 10, 'H', HORIZONTAL)
+  val destroyerP = GridImpl.ShipPlacement(Ship.destroyer, 9, 'A', VERTICAL)
 
   val correctShipPlacements = Set(carrierP, battleShipP, cruiserP, submarineP, destroyerP)
 
 
   "Grid" should {
     "return a new grid, if the 5 ships positions are correct" in {
-      val _ = Grid(correctShipPlacements)
+      val _ = GridImpl(correctShipPlacements)
     }
 
     "should return error if ship number is wrong" in {
       val exceptionInsufficientNumber = intercept[IllegalArgumentException] {
         val wrongPlacement = correctShipPlacements - carrierP
-        val _ = Grid(wrongPlacement)
+        val _ = GridImpl(wrongPlacement)
       }
       assert(exceptionInsufficientNumber.getMessage === "requirement failed: Ship number is incorrect")
 
       val exceptionExceedingNumber = intercept[IllegalArgumentException] {
         val wrongPlacement = correctShipPlacements + destroyerP.copy(row = 6, col = 'G')
-        val _ = Grid(wrongPlacement)
+        val _ = GridImpl(wrongPlacement)
       }
       assert(exceptionExceedingNumber.getMessage === "requirement failed: Ship number is incorrect")
     }
@@ -63,7 +63,7 @@ class GridSpec extends WordSpec with Matchers {
     "Fails to create Grid if one ship is on top of the other" in {
       val exception = intercept[IllegalArgumentException] {
         val wrongPlacement = correctShipPlacements - carrierP + carrierP.copy(row = 5)
-        val _ = Grid(wrongPlacement)
+        val _ = GridImpl(wrongPlacement)
       }
       exception.getMessage shouldBe "requirement failed: Ships overlap at point(s) (5,D)"
 
@@ -73,7 +73,7 @@ class GridSpec extends WordSpec with Matchers {
     "Fails to create Grid if group of ships is missing ship types" in {
       val exception = intercept[IllegalArgumentException] {
         val wrongPlacement = correctShipPlacements - cruiserP + destroyerP.copy(row = 6, col = 'G')
-        val _ = Grid(wrongPlacement)
+        val _ = GridImpl(wrongPlacement)
       }
       assert(exception.getMessage === "requirement failed: Not all types of ship are present")
     }
@@ -106,7 +106,7 @@ class GridSpec extends WordSpec with Matchers {
     */
     "return a new grid and Hit if attack is successful" in {
       val hitPoint = (1, 'C')
-      val grid = Grid(correctShipPlacements)
+      val grid = GridImpl(correctShipPlacements)
       val (newGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       attackResult shouldBe Hit
       newGrid.shipPlacements.find(sp => sp.ship == Ship.carrier) match {
@@ -118,7 +118,7 @@ class GridSpec extends WordSpec with Matchers {
 
     "return the same grid and Miss if attack is unsuccessful" in {
       val hitPoint = (2, 'A')
-      val grid = Grid(correctShipPlacements)
+      val grid = GridImpl(correctShipPlacements)
       val (sameGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       attackResult shouldBe Miss
       sameGrid shouldEqual grid
@@ -138,8 +138,8 @@ class GridSpec extends WordSpec with Matchers {
    */
     "return a new grid and 'You sank my Destroyer' when a destroyer is completely hit" in {
       val hitPoint = (9, 'A')
-      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.hit((10,'A'))
-      val grid = Grid(newShipPlacement)
+      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.hit((10, 'A'))
+      val grid = GridImpl(newShipPlacement)
       val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       nextGrid should not be grid
       attackResult.getMessage shouldBe "You sunk my Destroyer!"
@@ -147,18 +147,18 @@ class GridSpec extends WordSpec with Matchers {
 
     "return same grid with hit when you hit same spot in a ship" in {
       val hitPoint = (10, 'A')
-      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits=Set((10,'A')))
-      val grid = Grid(newShipPlacement)
+      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits = Set((10, 'A')))
+      val grid = GridImpl(newShipPlacement)
       val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       nextGrid shouldBe grid
       attackResult.getMessage shouldBe "You hit my ship!"
     }
 
     "return same grid with sunk when you hit an already sunk ship" in {
-      //TODO: Sent funny message if she sends same spot again
+      //TODO: Sent funny message if they send same spot again
       val hitPoint = (9, 'A')
-      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits=Set((10,'A'), (9, 'A')))
-      val grid = Grid(newShipPlacement)
+      val newShipPlacement = correctShipPlacements - destroyerP + destroyerP.copy(hits = Set((10, 'A'), (9, 'A')))
+      val grid = GridImpl(newShipPlacement)
       val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       nextGrid shouldBe grid
       attackResult.getMessage shouldBe "You sunk my Destroyer!"
@@ -179,13 +179,13 @@ class GridSpec extends WordSpec with Matchers {
     "return a new grid and 'You beat me' when the last ship is completely hit" in {
       val hitPoint = (9, 'A')
       val newShipPlacement = Set(
-        destroyerP.copy(hits=Set((10,'A'))),
-        carrierP.copy(hits=carrierP.getPositionPoints),
+        destroyerP.copy(hits = Set((10, 'A'))),
+        carrierP.copy(hits = carrierP.getPositionPoints),
         battleShipP.copy(hits = battleShipP.getPositionPoints),
         cruiserP.copy(hits = cruiserP.getPositionPoints),
         submarineP.copy(hits = submarineP.getPositionPoints)
       )
-      val grid = Grid(newShipPlacement)
+      val grid = GridImpl(newShipPlacement)
       val (nextGrid, attackResult) = grid.attack(hitPoint._1, hitPoint._2)
       nextGrid should not be grid
       attackResult.getMessage shouldBe "You win!"
@@ -207,7 +207,7 @@ class GridSpec extends WordSpec with Matchers {
        10 * * * * * # # # # #
     */
     "creates object, if the shipPlacement is inside the Grid" in {
-      val _ = Grid.ShipPlacement(Ship.carrier, 10, 'F', HORIZONTAL)
+      val _ = GridImpl.ShipPlacement(Ship.carrier, 10, 'F', HORIZONTAL)
     }
 
 
@@ -224,12 +224,12 @@ class GridSpec extends WordSpec with Matchers {
        10 * * * * * * * * * *
     */
     "create object, if the vertical shipPlacement is inside the Grid" in {
-      val _ = Grid.ShipPlacement(Ship.carrier, 1, 'J', VERTICAL)
+      val _ = GridImpl.ShipPlacement(Ship.carrier, 1, 'J', VERTICAL)
     }
 
     "fail to create ShipPlacement, if the shipPlacement column is outside the Grid" in {
       val thrown = intercept[IllegalArgumentException] {
-        val _ = carrierP.copy(col = ('A' + Grid.size + 1).toChar)
+        val _ = carrierP.copy(col = ('A' + GridImpl.size + 1).toChar)
       }
       assert(thrown.getMessage === "requirement failed: Column out of boundaries")
 
@@ -245,7 +245,7 @@ class GridSpec extends WordSpec with Matchers {
 
     "fail to create ShipPlacement, if the shipPlacement row is outside the Grid" in {
       val thrown = intercept[IllegalArgumentException] {
-        val _ = carrierP.copy(row = Grid.size + 1)
+        val _ = carrierP.copy(row = GridImpl.size + 1)
       }
       assert(thrown.getMessage === "requirement failed: Row out of boundaries")
     }
@@ -297,19 +297,40 @@ class GridSpec extends WordSpec with Matchers {
     }
 
     "hit a shipPlacement should succeed if hitpoint is correct" in {
-      val hitPoint = (9,'A')
+      val hitPoint = (9, 'A')
       val newShipPlacement = destroyerP.hit(hitPoint)
       newShipPlacement should not be destroyerP
     }
 
     "hit a shipPlacement returns exception if hitpoint is not part of the ship" in {
-      val wrongHitPoint = (2,'A')
+      val wrongHitPoint = (2, 'A')
       val thrown = intercept[IllegalArgumentException] {
         val _ = destroyerP.hit(wrongHitPoint)
       }
       assert(thrown.getMessage === "requirement failed: Invalid hit point(s)")
     }
 
+  }
+
+  "gridAsRowStrings" should {
+    "return the grid as a row of strings" in {
+      val grid: Grid = GridImpl(correctShipPlacements)
+      val expected =
+        "C C C C C - - - - -\n" +
+        "- - - - - - - c c c\n" +
+        "- - - - - - - - - -\n" +
+        "- - - B - - - - - -\n" +
+        "- - - B - - - - - -\n" +
+        "- - - B - - - - - -\n" +
+        "- - - B - - - - - -\n" +
+        "- - - - - - - - - -\n" +
+        "D - - - - - - - - -\n" +
+        "D - - - - - - S S S"
+
+      val result = grid.gridAsRowStrings.mkString("\n")
+
+      result shouldBe expected
+    }
   }
 
 }

@@ -1,6 +1,6 @@
 package server.battleship
 
-object Grid {
+object GridImpl {
 
   val size = 10
 
@@ -13,6 +13,8 @@ object Grid {
     }
 
   }
+
+  //TODO: Create a type alias or case class with a row and col
 
   case class ShipPlacement(ship: Ship, row: Int, col: Char, isHorizontal: Boolean, hits: Set[(Int, Char)] = Set()) {
     require({
@@ -54,12 +56,32 @@ object Grid {
 
 }
 
-case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
+trait Grid {
+  def attack(row: Int, col: Char): (Grid, AttackResult)
+  def shipPlacements: Set[GridImpl.ShipPlacement]
+
+  def gridAsRowStrings: Seq[String] = {
+    val locations = for {
+      r <- 1 to GridImpl.size
+      c <- 'A' until ('A' + GridImpl.size).toChar
+    } yield {
+      shipPlacements.find(_.getPositionPoints.contains((r, c))) match {
+        case None => "-"
+        case Some(shipPlacement) if !shipPlacement.hits.contains((r, c)) => shipPlacement.ship.symbol
+        case _ => "X"
+      }
+    }
+    locations.sliding(10, 10).map(_.mkString(" ")).toSeq
+  }
+
+}
+
+case class GridImpl(shipPlacements: Set[GridImpl.ShipPlacement]) extends Grid {
   require(shipPlacements.size == 5, "Ship number is incorrect")
   require(shipPlacements.map(_.ship.name) == Ship.allShipTypes, "Not all types of ship are present")
   require(overlaps.isEmpty, "Ships overlap at point(s) " + overlaps.mkString(", "))
 
-  def overlaps: Set[(Int, Char)] = {
+  private def overlaps: Set[(Int, Char)] = {
     val points = shipPlacements.map(_.getPositionPoints).toList.flatten
     points
     .groupBy(identity)
@@ -67,7 +89,7 @@ case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
     .toSet
   }
 
-  def attack(row: Int, col: Char): (Grid, AttackResult) = {
+  override def attack(row: Int, col: Char): (Grid, AttackResult) = {
     shipPlacements.find(sp => sp.isHit((row, col))) match {
       case None =>
         (this, Miss)
@@ -75,7 +97,7 @@ case class Grid(shipPlacements: Set[Grid.ShipPlacement]) {
       case Some(shipP) =>
         val newHit = (row, col)
         val newShipP = shipP.copy(hits = shipP.hits + newHit)
-        val newGrid = Grid(shipPlacements - shipP + newShipP)
+        val newGrid = GridImpl(shipPlacements - shipP + newShipP)
         val attackResult =
           if (newGrid.isGameOver) Win
           else if (newShipP.isSunk) Sunk(newShipP.ship)
