@@ -25,7 +25,9 @@ lazy val server = (project in file("server")).settings(
     "io.circe" %% "circe-generic" % circeVersion,
     "io.circe" %% "circe-parser" % circeVersion,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingV,
-    "ch.qos.logback" % "logback-classic" % "1.2.3"
+    "com.typesafe.akka" %% "akka-actor" % "2.5.14",
+    "com.typesafe.akka" %% "akka-testkit" % "2.5.14" % Test,
+"ch.qos.logback" % "logback-classic" % "1.2.3"
   ))
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
