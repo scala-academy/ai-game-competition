@@ -1,4 +1,4 @@
-package server.akka
+package server.actors
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
