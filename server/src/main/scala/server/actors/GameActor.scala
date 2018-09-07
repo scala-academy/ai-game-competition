@@ -21,17 +21,19 @@ class GameActor(player1: Player, player2: Player) extends Actor {
   val player2Actor = context.actorOf(PlayerActor.props(player2), "Player2")
   val players: Map[Player, ActorRef] = Map(player1 -> player1Actor, player2 -> player2Actor)
 
-  var game = GameState.create(player1, player2)
+  val initialGame = GameState.create(player1, player2)
 
-  players(game.playerOnTurn) ! GetAttack
+  override def preStart(): Unit = players(initialGame.playerOnTurn) ! GetAttack
 
-  override def receive: Receive = {
+  override def receive: Receive = ongoingGame(initialGame)
+
+  def ongoingGame(game: GameState): Receive = {
     case Attack(row, col) =>
       val (newGame, attackResult) = game.processMove(row, col)
       players(game.playerOnTurn) ! ProcessAttackResult(attackResult)
       println(newGame.gameStateAsString)
       if (attackResult != Win) {
-        game = newGame
+        context.become(ongoingGame(newGame))
         players(newGame.playerOnTurn) ! GetAttack
       } else {
       }
