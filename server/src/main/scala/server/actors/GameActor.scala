@@ -29,7 +29,7 @@ class GameActor(player1: Player, player2: Player) extends Actor {
     case Attack(row, col) =>
       val (newGame, attackResult) = game.processMove(row, col)
       players(game.playerOnTurn) ! ProcessAttackResult(attackResult)
-      println(game.gameStateAsString)
+      println(newGame.gameStateAsString)
       if (attackResult != Win) {
         game = newGame
         players(newGame.playerOnTurn) ! GetAttack
