@@ -16,7 +16,7 @@ class GameStateSpec extends WordSpec with Matchers {
     override def getAttack = new HumanInterface().shipPlacements.iterator.next().getPositionPoints.iterator.next()
   }
 
-  val gameState = GameState.create(mockPlayer1, mockPlayer2)
+  val gameState = GameState(mockPlayer1, GridImpl(mockPlayer1.shipPlacements), mockPlayer2, GridImpl(mockPlayer2.shipPlacements))
 
   "initiate" should {
     "have a grid for each player" in {
