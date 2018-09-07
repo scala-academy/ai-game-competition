@@ -11,14 +11,15 @@ class PlayerActorSpec extends TestKit(ActorSystem("PlayerActor")) with WordSpecL
 
   "PlayerActor" should {
     "respond with an attack when receiving GetAttack" in new PlayerActorBehavior {
-      val attackLocation = (2, 'C')
-      val attack = Attack(attackLocation._1, attackLocation._2)
+      val attackRow = 2
+      val attackCol = 'C'
+      val attack = Attack(attackRow, attackCol)
       val probe = TestProbe("Testprobe")
 
       val playerLogic = new Player {
         val shipPlacements: Set[ShipPlacement] = Set.empty
 
-        def getAttack: (Int, Char) = attackLocation
+        def getAttack: (Int, Char) = (attackRow, attackCol)
       }
 
       handleGetAttack(playerLogic, probe.ref)
