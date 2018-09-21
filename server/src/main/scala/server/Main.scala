@@ -1,18 +1,10 @@
 package server
 
-import akka.actor.{ActorRef, ActorSystem}
-import akka.util.Timeout
-import server.actors.GameActor
-import server.battleship.HumanInterface
-
-import scala.concurrent.duration._
+import com.twitter.util.Await
 
 object Main extends App {
 
-  val system = ActorSystem("Battleship-actorsystem")
+  val defaultPort = 8080
 
-  implicit val timeout = Timeout(25 millis)
-
-  val gameActor: ActorRef = system.actorOf(GameActor.props(new HumanInterface(HumanInterface.addShips), new HumanInterface(HumanInterface.addShips)))
-
+  Await.ready(Server(defaultPort).server)
 }
